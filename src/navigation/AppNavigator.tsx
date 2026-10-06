@@ -24,7 +24,7 @@ export type RootStackParamList = {
   StudentTabs: undefined;
   SenseiTabs: undefined;
   DojoProfile: { dojo: Dojo };
-  LeadForm: { dojo: Dojo };
+  LeadForm: { dojo: Dojo; trialClass?: { id: string; title: string } };
 };
 
 export type StudentTabsParamList = {

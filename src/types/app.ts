@@ -17,14 +17,14 @@ export interface Dojo {
   name: string;
   city: string;
   address: string;
-  distanceKm: number;
+  distanceKm: number | null;
   rating: number;
   trialCapacity: number;
   description: string;
   sensei: string;
   specialties: string[];
   image: string;
-  mapRegion: {
+  mapRegion?: {
     latitude: number;
     longitude: number;
     latitudeDelta: number;
@@ -42,6 +42,7 @@ export interface TrialClass {
   format: string;
   level: string;
   seatsLeft: number;
+  dojo: Dojo;
 }
 
 export interface TrainingContent {

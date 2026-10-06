@@ -2,6 +2,23 @@
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
+## Supabase setup
+
+The app reads published dojos, trial classes, and training content from Supabase. Student trial requests are saved to `public.leads`.
+
+1. In Supabase, open **Project Settings → API** and add these Expo-public variables to `.env.local` (the publishable/anon key is intended for client apps):
+
+   ```dotenv
+   EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+   EXPO_PUBLIC_SUPABASE_ANON_KEY=your-publishable-key
+   ```
+
+2. Run [`supabase/schema.sql`](./supabase/schema.sql) in the Supabase SQL Editor. It creates the tables, auth profile trigger, indexes, grants, and row-level security policies expected by the app.
+3. Add dojo, trial class, and training content records in the Supabase dashboard. Public records must have `is_published = true`; new dojo and class records default to unpublished.
+4. Restart Expo after changing environment variables.
+
+Public queries are restricted to published records. Trial requests require a signed-in student profile; row-level security scopes submissions and reads to the student and the owning dojo. Sensei-created dojos remain unpublished until an administrator reviews and publishes them.
+
 ## Get started
 
 1. Install dependencies

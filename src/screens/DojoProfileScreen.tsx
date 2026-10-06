@@ -13,13 +13,13 @@ export function DojoProfileScreen({ route, navigation }: Props) {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Card style={styles.card}>
-        <Card.Cover source={{ uri: dojo.image }} />
+        {dojo.image ? <Card.Cover source={{ uri: dojo.image }} /> : null}
         <Card.Content style={styles.content}>
           <Text variant="headlineMedium">{dojo.name}</Text>
           <Text variant="titleMedium">{dojo.city} • {dojo.address}</Text>
-          <Text variant="bodyLarge" style={styles.description}>{dojo.description}</Text>
+          {dojo.description ? <Text variant="bodyLarge" style={styles.description}>{dojo.description}</Text> : null}
           <Text variant="bodyMedium">Sensei: {dojo.sensei}</Text>
-          <Text variant="bodyMedium">Rating: {dojo.rating}/5</Text>
+          {dojo.rating > 0 ? <Text variant="bodyMedium">Rating: {dojo.rating}/5</Text> : null}
           <Text variant="bodyMedium">Trial capacity: {dojo.trialCapacity}</Text>
           <View style={styles.chipsRow}>
             {dojo.specialties.map((item) => (

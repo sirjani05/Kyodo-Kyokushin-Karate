@@ -9,7 +9,7 @@ import type { UserRole } from '@/types/app';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Auth'>;
 
-export function AuthScreen({ navigation, route }: Props) {
+export function AuthScreen({ route }: Props) {
   const { signIn, register } = useAppContext();
   const initialMode = route.params?.mode ?? 'login';
   const [mode, setMode] = useState<'login' | 'register'>(initialMode);
@@ -20,6 +20,7 @@ export function AuthScreen({ navigation, route }: Props) {
   const [city, setCity] = useState('Tokyo');
   const [role, setRole] = useState<UserRole>('student');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
 
   const isLoginMode = mode === 'login';
 
@@ -27,11 +28,12 @@ export function AuthScreen({ navigation, route }: Props) {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    setFeedbackMessage(null);
     try {
       if (isLoginMode) {
         await signIn(email.trim(), password, role);
       } else {
-        await register({
+        const signedIn = await register({
           displayName: displayName.trim() || 'Kyodo Member',
           email: email.trim(),
           password,
@@ -39,13 +41,12 @@ export function AuthScreen({ navigation, route }: Props) {
           dojoName: dojoName.trim() || undefined,
           city: city.trim() || 'Tokyo',
         });
+        if (!signedIn) {
+          setFeedbackMessage('Your account was created. Check your email to confirm your address, then sign in.');
+        }
       }
-      navigation.reset({
-        index: 0,
-        routes: [{ name: role === 'sensei' ? 'SenseiTabs' : 'StudentTabs' }],
-      });
     } catch (error) {
-      console.warn('Auth submit failed', error);
+      setFeedbackMessage(error instanceof Error ? error.message : 'Could not authenticate. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -119,6 +120,8 @@ export function AuthScreen({ navigation, route }: Props) {
             ]}
           />
 
+          {feedbackMessage ? <Text accessibilityRole="alert" style={styles.feedback}>{feedbackMessage}</Text> : null}
+
           <Button mode="contained" onPress={handleSubmit} loading={isSubmitting} disabled={isSubmitting}>
             {submitLabel}
           </Button>
@@ -139,5 +142,8 @@ const styles = StyleSheet.create({
   },
   cardContent: {
     gap: 14,
+  },
+  feedback: {
+    color: '#b3261e',
   },
 });
