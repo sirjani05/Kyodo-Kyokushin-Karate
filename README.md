@@ -19,6 +19,19 @@ The app reads published dojos, trial classes, and training content from Supabase
 
 Public queries are restricted to published records. Trial requests require a signed-in student profile; row-level security scopes submissions and reads to the student and the owning dojo. Sensei-created dojos remain unpublished until an administrator reviews and publishes them.
 
+## Start the app
+
+Use the project scripts to start Expo:
+
+```bash
+npm start
+npm run android
+npm run ios
+npm run web
+```
+
+These scripts temporarily disable Expo Router's React Navigation import guard because the app currently uses a nested React Navigation navigator. This is a compatibility workaround; a full Expo Router route migration is still needed to remove it.
+
 ## Get started
 
 1. Install dependencies
@@ -27,20 +40,26 @@ Public queries are restricted to published records. Trial requests require a sig
    npm install
    ```
 
-2. Start the app
+2. Start Expo with the project launcher
 
    ```bash
-   npx expo start
+   npm start
    ```
 
-In the output, you'll find options to open the app in a
+Scan the QR code using Expo Go on a physical device, or use a platform shortcut:
+
+```bash
+npm run android
+npm run ios
+npm run web
+```
+
+`npm run android` requires Android Studio's Android SDK and `adb` to be installed and discoverable. On Linux, if the SDK is installed in the default location, set `ANDROID_HOME="$HOME/Android/Sdk"` and add `$ANDROID_HOME/platform-tools` to `PATH`. If there is no local SDK, use Expo Go on a physical device instead.
 
 - [development build](https://docs.expo.dev/develop/development-builds/introduction/)
 - [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
 - [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
 - [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
 ## Get a fresh project
 
