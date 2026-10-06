@@ -25,7 +25,7 @@ export function LeadFormScreen({ route, navigation }: Props) {
       setErrorMessage('Enter your name and a valid email address to request a trial.');
       return;
     }
-    if (!user || user.role !== 'student' || user.isDemo) {
+    if (!user || user.role !== 'student') {
       setErrorMessage('Sign in with a student Supabase account to send a trial request.');
       return;
     }

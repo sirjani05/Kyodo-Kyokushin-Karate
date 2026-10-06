@@ -1,9 +1,7 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as SecureStore from 'expo-secure-store';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { fetchUserProfile } from '@/lib/dojo-data';
-import { getAuthModeLabel, supabase } from '@/lib/supabase';
+import { getAuthModeLabel, requireSupabase } from '@/lib/supabase';
 import type { UserProfile, UserRole } from '@/types/app';
 
 interface AppContextValue {
@@ -11,7 +9,7 @@ interface AppContextValue {
   isLoading: boolean;
   isAuthReady: boolean;
   role: UserRole | null;
-  signIn: (email: string, password: string, role: UserRole) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>;
   register: (payload: { displayName: string; email: string; password: string; role: UserRole; dojoName?: string; city?: string }) => Promise<boolean>;
   signOut: () => Promise<void>;
   isStudent: boolean;
@@ -19,18 +17,7 @@ interface AppContextValue {
   connectionLabel: string;
 }
 
-const STORAGE_KEY = 'kyodo.user.profile.v1';
-
 const AppContext = createContext<AppContextValue | undefined>(undefined);
-
-const buildDemoUser = (role: UserRole, email: string, displayName = 'Kyodo Member'): UserProfile => ({
-  uid: `demo-${role}-${Date.now()}`,
-  email,
-  displayName,
-  role,
-  city: 'Tokyo',
-  isDemo: true,
-});
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -39,131 +26,78 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let active = true;
 
-    const readStoredSession = async () => {
+    const restoreSession = async () => {
       try {
-        if (supabase) {
-          const { data, error } = await supabase.auth.getSession();
-          if (error) throw error;
-          const sessionUser = data.session?.user;
-          if (sessionUser) {
-            const profile = await fetchUserProfile(sessionUser.id, sessionUser.email ?? '');
-            if (active) setUser(profile);
-          }
-          return;
-        }
+        const client = requireSupabase();
+        const { data, error } = await client.auth.getSession();
+        if (error) throw error;
 
-        const secureProfile = await SecureStore.getItemAsync(STORAGE_KEY);
-        if (!secureProfile) {
-          const fallback = await AsyncStorage.getItem(STORAGE_KEY);
-          if (!fallback) {
-            return;
-          }
-          const parsed = JSON.parse(fallback) as UserProfile;
-          if (active) {
-            setUser(parsed);
-          }
-          return;
-        }
-        const parsed = JSON.parse(secureProfile) as UserProfile;
-        if (active) {
-          setUser(parsed);
-        }
+        const sessionUser = data.session?.user;
+        if (!sessionUser) return;
+
+        const profile = await fetchUserProfile(sessionUser.id, sessionUser.email ?? '');
+        if (active) setUser(profile);
       } catch (error) {
-        console.warn('Could not restore stored profile', error);
+        console.warn('Could not restore Supabase session', error);
       } finally {
-        if (active) {
-          setIsLoading(false);
-        }
+        if (active) setIsLoading(false);
       }
     };
 
-    void readStoredSession();
+    void restoreSession();
     return () => {
       active = false;
     };
   }, []);
 
-  const persistUser = async (nextUser: UserProfile | null) => {
-    if (!nextUser) {
-      await SecureStore.deleteItemAsync(STORAGE_KEY).catch(() => undefined);
-      await AsyncStorage.removeItem(STORAGE_KEY);
-      return;
-    }
+  const signIn = useCallback(async (email: string, password: string) => {
+    const client = requireSupabase();
+    const { data, error } = await client.auth.signInWithPassword({ email, password });
+    if (error) throw error;
 
-    try {
-      await SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(nextUser));
-    } catch (error) {
-      console.warn('SecureStore unavailable, using AsyncStorage fallback', error);
+    const profile = await fetchUserProfile(data.user.id, data.user.email ?? email);
+    if (!profile) {
+      throw new Error('Your account profile is missing or has an invalid role. Contact your dojo administrator.');
     }
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(nextUser));
-  };
-
-  const signIn = useCallback(async (email: string, password: string, role: UserRole) => {
-    if (supabase) {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        throw error;
-      }
-      const profile = await fetchUserProfile(data.user.id, data.user.email ?? email);
-      if (!profile) throw new Error('Your account profile is missing or has an invalid role. Contact your dojo administrator.');
-      await persistUser(profile);
-      setUser(profile);
-      return;
-    }
-
-    const nextUser = buildDemoUser(role, email, 'Demo Member');
-    await persistUser(nextUser);
-    setUser(nextUser);
+    setUser(profile);
   }, []);
 
-  const register = useCallback(async (payload: { displayName: string; email: string; password: string; role: UserRole; dojoName?: string; city?: string }) => {
-    if (supabase) {
-      const { data, error } = await supabase.auth.signUp({
-        email: payload.email,
-        password: payload.password,
-        options: {
-          data: {
-            full_name: payload.displayName,
-            role: payload.role,
-            dojo_name: payload.dojoName ?? null,
-            city: payload.city ?? 'Tokyo',
-          },
-        },
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      if (!data.user || !data.session) return false;
-
-      const profile = await fetchUserProfile(data.user.id, payload.email);
-      if (!profile) throw new Error('Your account was created, but its profile is missing. Please contact support.');
-      await persistUser(profile);
-      setUser(profile);
-      return true;
-    }
-
-    const nextUser: UserProfile = {
-      uid: `demo-${payload.role}-${Date.now()}`,
+  const register = useCallback(async (payload: {
+    displayName: string;
+    email: string;
+    password: string;
+    role: UserRole;
+    dojoName?: string;
+    city?: string;
+  }) => {
+    const client = requireSupabase();
+    const { data, error } = await client.auth.signUp({
       email: payload.email,
-      displayName: payload.displayName,
-      role: payload.role,
-      dojoName: payload.dojoName,
-      city: payload.city ?? 'Tokyo',
-      isDemo: true,
-    };
-    await persistUser(nextUser);
-    setUser(nextUser);
+      password: payload.password,
+      options: {
+        data: {
+          full_name: payload.displayName,
+          role: payload.role,
+          dojo_name: payload.dojoName ?? null,
+          city: payload.city ?? 'Tokyo',
+        },
+      },
+    });
+
+    if (error) throw error;
+    if (!data.user || !data.session) return false;
+
+    const profile = await fetchUserProfile(data.user.id, payload.email);
+    if (!profile) {
+      throw new Error('Your account was created, but its profile is missing. Please contact support.');
+    }
+    setUser(profile);
     return true;
   }, []);
 
   const signOut = useCallback(async () => {
-    if (supabase) {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-    }
-    await persistUser(null);
+    const { error } = await requireSupabase().auth.signOut();
+    if (error) throw error;
     setUser(null);
   }, []);
 

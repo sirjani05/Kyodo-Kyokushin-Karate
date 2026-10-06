@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { requireSupabase } from '@/lib/supabase';
 import type { Dojo, Lead, TrainingContent, TrialClass, UserProfile } from '@/types/app';
 
 interface DojoRow {
@@ -56,13 +56,6 @@ interface ProfileRow {
   role: unknown;
   dojo_name: string | null;
   city: string | null;
-}
-
-function requireSupabase() {
-  if (!supabase) {
-    throw new Error('Supabase is not configured. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY.');
-  }
-  return supabase;
 }
 
 function toDojo(row: DojoRow): Dojo {
@@ -231,6 +224,5 @@ export async function fetchUserProfile(userId: string, fallbackEmail = ''): Prom
     role: profile.role,
     dojoName: profile.dojo_name ?? undefined,
     city: profile.city ?? undefined,
-    isDemo: false,
   };
 }

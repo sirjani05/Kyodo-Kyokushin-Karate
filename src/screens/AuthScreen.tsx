@@ -31,7 +31,7 @@ export function AuthScreen({ route }: Props) {
     setFeedbackMessage(null);
     try {
       if (isLoginMode) {
-        await signIn(email.trim(), password, role);
+        await signIn(email.trim(), password);
       } else {
         const signedIn = await register({
           displayName: displayName.trim() || 'Kyodo Member',
@@ -110,15 +110,19 @@ export function AuthScreen({ route }: Props) {
             </>
           )}
 
-          <Text variant="titleSmall">I am joining as</Text>
-          <SegmentedButtons
-            value={role}
-            onValueChange={(next) => setRole(next as UserRole)}
-            buttons={[
-              { value: 'student', label: 'Student' },
-              { value: 'sensei', label: 'Sensei' },
-            ]}
-          />
+          {!isLoginMode && (
+            <>
+              <Text variant="titleSmall">I am joining as</Text>
+              <SegmentedButtons
+                value={role}
+                onValueChange={(next) => setRole(next as UserRole)}
+                buttons={[
+                  { value: 'student', label: 'Student' },
+                  { value: 'sensei', label: 'Sensei' },
+                ]}
+              />
+            </>
+          )}
 
           {feedbackMessage ? <Text accessibilityRole="alert" style={styles.feedback}>{feedbackMessage}</Text> : null}
 

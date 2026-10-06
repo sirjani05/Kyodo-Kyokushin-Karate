@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Kyodo-Kyokushin-Karate",
-    "slug": "Kyodo-Kyokushin-Karate",
+    "name": "kyokushin-karate",
+    "slug": "kyokushin-karate",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "kyodokyokushinkarate",
+    "scheme": "kyokushinkarate",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"

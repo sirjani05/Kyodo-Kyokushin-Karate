@@ -9,7 +9,6 @@ export interface UserProfile {
   dojoName?: string;
   phone?: string;
   city?: string;
-  isDemo: boolean;
 }
 
 export interface Dojo {
