@@ -2,7 +2,7 @@ import React from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Card, Chip, Text } from 'react-native-paper';
 
-export function SenseiDashboardScreen() {
+export default function DashboardScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text variant="headlineMedium">Sensei dashboard</Text>

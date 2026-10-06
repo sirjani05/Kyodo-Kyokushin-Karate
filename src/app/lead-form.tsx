@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { Button, Card, Text, TextInput } from 'react-native-paper';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-
+import { useLocalSearchParams, router } from 'expo-router';
 import { useAppContext } from '@/context/AppContext';
 import { createTrialRequest } from '@/lib/dojo-data';
-import type { RootStackParamList } from '@/navigation/AppNavigator';
+import type { Dojo } from '@/types/app';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'LeadForm'>;
-
-export function LeadFormScreen({ route, navigation }: Props) {
-  const { dojo, trialClass } = route.params;
+export default function LeadFormScreen() {
+  const { dojo, trialClass } = useLocalSearchParams<{ dojo: string; trialClass?: string }>();
+  const parsedDojo: Dojo = JSON.parse(dojo);
+  const parsedTrialClass = trialClass ? JSON.parse(trialClass) : undefined;
   const { user } = useAppContext();
   const [name, setName] = useState(user?.displayName ?? '');
   const [email, setEmail] = useState(user?.email ?? '');
@@ -38,8 +37,8 @@ export function LeadFormScreen({ route, navigation }: Props) {
         candidateName: name.trim(),
         email: normalizedEmail,
         phone: phone.trim(),
-        dojoId: dojo.id,
-        trialClassId: trialClass?.id,
+        dojoId: parsedDojo.id,
+        trialClassId: parsedTrialClass?.id,
       });
       setIsSubmitted(true);
     } catch (error) {
@@ -54,12 +53,12 @@ export function LeadFormScreen({ route, navigation }: Props) {
       <Card style={styles.card}>
         <Card.Content style={styles.content}>
           <Text variant="headlineMedium">{isSubmitted ? 'Request sent' : 'Free trial request'}</Text>
-          <Text variant="titleMedium">{dojo.name}</Text>
-          {trialClass ? <Text variant="bodyMedium">Class: {trialClass.title}</Text> : null}
+          <Text variant="titleMedium">{parsedDojo.name}</Text>
+          {parsedTrialClass ? <Text variant="bodyMedium">Class: {parsedTrialClass.title}</Text> : null}
           {isSubmitted ? (
             <>
-              <Text>Your request has been sent to {dojo.name}. The dojo will contact you to confirm the details.</Text>
-              <Button mode="contained" onPress={() => navigation.goBack()}>Done</Button>
+              <Text>Your request has been sent to {parsedDojo.name}. The dojo will contact you to confirm the details.</Text>
+              <Button mode="contained" onPress={() => router.back()}>Done</Button>
             </>
           ) : (
             <>

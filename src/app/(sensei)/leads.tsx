@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 import { Button, Card, Text } from 'react-native-paper';
-
 import { useAppContext } from '@/context/AppContext';
 import { fetchSenseiLeads, updateLeadStatus } from '@/lib/dojo-data';
 import type { Lead } from '@/types/app';
@@ -17,7 +16,7 @@ const statusLabel: Record<Lead['status'], string> = {
   booked: 'Trial booked',
 };
 
-export function LeadsScreen() {
+export default function LeadsScreen() {
   const { user } = useAppContext();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [isLoading, setIsLoading] = useState(true);

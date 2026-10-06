@@ -2,18 +2,10 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { Button, Card, Chip, Text } from 'react-native-paper';
-import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import type { CompositeScreenProps } from '@react-navigation/native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { router } from 'expo-router';
 
 import { fetchDojos } from '@/lib/dojo-data';
-import type { RootStackParamList, StudentTabsParamList } from '@/navigation/AppNavigator';
 import type { Dojo } from '@/types/app';
-
-type ScreenProps = CompositeScreenProps<
-  BottomTabScreenProps<StudentTabsParamList, 'Discover'>,
-  NativeStackScreenProps<RootStackParamList>
->;
 
 const DEFAULT_REGION = {
   latitude: 35.6762,
@@ -22,7 +14,7 @@ const DEFAULT_REGION = {
   longitudeDelta: 0.2,
 };
 
-export function DiscoverScreen({ navigation }: ScreenProps) {
+export default function DiscoverScreen() {
   const [dojos, setDojos] = useState<Dojo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -129,8 +121,8 @@ export function DiscoverScreen({ navigation }: ScreenProps) {
             <Text variant="bodyMedium" style={styles.meta}>Sensei: {dojo.sensei}</Text>
             <Text variant="bodyMedium" style={styles.meta}>Free trial places: {dojo.trialCapacity}</Text>
             <View style={styles.buttonsRow}>
-              <Button mode="outlined" onPress={() => navigation.navigate('DojoProfile', { dojo })}>View dojo</Button>
-              <Button mode="contained" onPress={() => navigation.navigate('LeadForm', { dojo })}>Free trial</Button>
+              <Button mode="outlined" onPress={() => router.push({ pathname: '/dojo-profile', params: { dojo: JSON.stringify(dojo) } })}>View dojo</Button>
+              <Button mode="contained" onPress={() => router.push({ pathname: '/lead-form', params: { dojo: JSON.stringify(dojo) } })}>Free trial</Button>
             </View>
           </Card.Content>
         </Card>

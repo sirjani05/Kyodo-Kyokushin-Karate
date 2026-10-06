@@ -1,18 +1,15 @@
 import React, { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { Button, Card, SegmentedButtons, Text, TextInput } from 'react-native-paper';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-
+import { useLocalSearchParams, router } from 'expo-router';
 import { useAppContext } from '@/context/AppContext';
-import type { RootStackParamList } from '@/navigation/AppNavigator';
 import type { UserRole } from '@/types/app';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Auth'>;
-
-export function AuthScreen({ route }: Props) {
+export default function AuthScreen() {
   const { signIn, register } = useAppContext();
-  const initialMode = route.params?.mode ?? 'login';
-  const [mode, setMode] = useState<'login' | 'register'>(initialMode);
+  const { mode } = useLocalSearchParams<{ mode?: 'login' | 'register' }>();
+  const initialMode = mode ?? 'login';
+  const [currentMode, setCurrentMode] = useState<'login' | 'register'>(initialMode);
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,7 +19,7 @@ export function AuthScreen({ route }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
 
-  const isLoginMode = mode === 'login';
+  const isLoginMode = currentMode === 'login';
 
   const submitLabel = useMemo(() => (isLoginMode ? 'Sign in' : 'Create profile'), [isLoginMode]);
 
@@ -58,8 +55,8 @@ export function AuthScreen({ route }: Props) {
         <Card.Content style={styles.cardContent}>
           <Text variant="headlineMedium">{isLoginMode ? 'Welcome back' : 'Start your dojo journey'}</Text>
           <SegmentedButtons
-            value={mode}
-            onValueChange={(next) => setMode(next as 'login' | 'register')}
+            value={currentMode}
+            onValueChange={(next) => setCurrentMode(next as 'login' | 'register')}
             buttons={[
               { value: 'login', label: 'Sign in' },
               { value: 'register', label: 'Register' },

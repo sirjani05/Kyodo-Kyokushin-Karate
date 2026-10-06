@@ -1,13 +1,9 @@
 import React from 'react';
 import { Image, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Chip, Text, useTheme } from 'react-native-paper';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { router } from 'expo-router';
 
-import type { RootStackParamList } from '@/navigation/AppNavigator';
-
-type Props = NativeStackScreenProps<RootStackParamList, 'Welcome'>;
-
-export function WelcomeScreen({ navigation }: Props) {
+export default function WelcomeScreen() {
   const theme = useTheme();
 
   return (
@@ -62,10 +58,10 @@ export function WelcomeScreen({ navigation }: Props) {
         </Card.Content>
       </Card>
 
-      <Button mode="contained" onPress={() => navigation.navigate('Auth', { mode: 'register' })} style={styles.primaryButton}>
+      <Button mode="contained" onPress={() => router.push('/(auth)/auth?mode=register')} style={styles.primaryButton}>
         Create account
       </Button>
-      <Button mode="outlined" onPress={() => navigation.navigate('Auth', { mode: 'login' })}>
+      <Button mode="outlined" onPress={() => router.push('/(auth)/auth?mode=login')}>
         Sign in
       </Button>
     </ScrollView>
